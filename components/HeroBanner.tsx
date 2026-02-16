@@ -1,8 +1,31 @@
 import Image from "next/image";
-import { products } from "@/lib/data";
+import { Product } from "@/lib/data";
 
-export default function HeroBanner() {
+interface HeroBannerProps {
+  products: Product[];
+}
+
+export default function HeroBanner({ products }: HeroBannerProps) {
   const heroProducts = products.filter(p => p.featured).slice(0, 4);
+
+  if (heroProducts.length === 0) {
+    return (
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
+        <div className="rounded-3xl overflow-hidden bg-primary min-h-[320px] lg:min-h-[520px] flex items-end p-8 sm:p-10">
+          <div>
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.5rem] text-white leading-[1.1]">
+              Produse Casnice<br />
+              <em>pentru o casă</em><br />
+              mai frumoasă
+            </h1>
+            <p className="mt-4 text-white/60 text-[15px] max-w-md leading-relaxed">
+              Descoperă colecția noastră de produse alese cu grijă pentru fiecare colț al casei tale.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">

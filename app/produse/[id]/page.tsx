@@ -1,27 +1,67 @@
+"use client";
+
+import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { products, getProductById, getProductsByCategory, getCategoryInfo } from "@/lib/data";
+import { Product, fetchProductById, fetchProductsByCategory, getCategoryInfo } from "@/lib/data";
 import AddToCartButton from "@/components/AddToCartButton";
 
-export function generateStaticParams() {
-  return products.map((p) => ({ id: p.id }));
-}
+export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const product = getProductById(id);
-  if (!product) return { title: "Produs negăsit" };
-  return { title: `${product.name} — CasaMea`, description: product.description };
-}
+  useEffect(() => {
+    async function loadProduct() {
+      try {
+        setLoading(true);
+        setError(null);
+        const numId = parseInt(id, 10);
+        if (isNaN(numId)) {
+          setError("Produs negăsit.");
+          return;
+        }
+        const data = await fetchProductById(numId);
+        setProduct(data);
 
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const product = getProductById(id);
-  if (!product) notFound();
+        const similar = await fetchProductsByCategory(data.category);
+        setSimilarProducts(similar.filter((p) => p.id !== data.id).slice(0, 3));
+      } catch {
+        setError("Nu am putut încărca produsul. Verifică conexiunea.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="mt-4 text-sm text-muted">Se încarcă produsul...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col items-center justify-center py-20">
+          <p className="text-red-500 text-sm">{error || "Produs negăsit."}</p>
+          <Link href="/" className="mt-3 text-primary text-sm font-medium hover:underline">
+            ← Înapoi la pagina principală
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const categoryInfo = getCategoryInfo(product.category);
-  const similarProducts = getProductsByCategory(product.category).filter((p) => p.id !== product.id).slice(0, 3);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

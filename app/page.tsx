@@ -7,9 +7,11 @@ import CategoryCard from "@/components/CategoryCard";
 import FilterBar from "@/components/FilterBar";
 import ProductGrid from "@/components/ProductGrid";
 import ProductModal from "@/components/ProductModal";
-import { Product, Category, products, categories, getFeaturedProducts } from "@/lib/data";
+import { Product, Category, categories } from "@/lib/data";
+import { useProducts } from "@/lib/useProducts";
 
 export default function Home() {
+  const { products, loading, error } = useProducts();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
   const [sortBy, setSortBy] = useState("price-asc");
@@ -28,14 +30,14 @@ export default function Home() {
       case "name-asc": result.sort((a, b) => a.name.localeCompare(b.name, "ro")); break;
     }
     return result;
-  }, [search, activeCategory, sortBy]);
+  }, [products, search, activeCategory, sortBy]);
 
-  const featured = getFeaturedProducts().slice(0, 4);
+  const featured = products.filter(p => p.featured).slice(0, 4);
   const galleryProducts = products.slice(5, 11);
 
   return (
     <>
-      <HeroBanner />
+      <HeroBanner products={products} />
 
       {/* ─── BESTSELLING PRODUCTS ─── */}
       <section id="produse" className="py-16">
@@ -62,7 +64,21 @@ export default function Home() {
           />
 
           <div className="mt-8">
-            <ProductGrid products={filteredProducts} onProductClick={setSelectedProduct} />
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                <p className="mt-4 text-sm text-muted">Se încarcă produsele...</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <p className="text-red-500 text-sm">{error}</p>
+                <button onClick={() => window.location.reload()} className="mt-3 text-primary text-sm font-medium hover:underline">
+                  Reîncearcă
+                </button>
+              </div>
+            ) : (
+              <ProductGrid products={filteredProducts} onProductClick={setSelectedProduct} />
+            )}
           </div>
         </div>
       </section>
@@ -120,6 +136,7 @@ export default function Home() {
                 <CategoryCard
                   category={cat}
                   isActive={activeCategory === cat.slug}
+                  products={products}
                   onClick={() => {
                     setActiveCategory(activeCategory === cat.slug ? null : cat.slug);
                     document.getElementById("produse")?.scrollIntoView({ behavior: "smooth" });
@@ -132,32 +149,34 @@ export default function Home() {
       </section>
 
       {/* ─── GALLERY (bento grid like inspiration) ─── */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <p className="text-[13px] text-muted mb-1">Idei și inspirație</p>
-              <h2 className="font-display text-3xl text-foreground">
-                Galerie · <em className="text-primary">Inspirație</em>
-              </h2>
+      {galleryProducts.length > 0 && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <p className="text-[13px] text-muted mb-1">Idei și inspirație</p>
+                <h2 className="font-display text-3xl text-foreground">
+                  Galerie · <em className="text-primary">Inspirație</em>
+                </h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {galleryProducts.map((p, i) => {
+                const tall = i === 0 || i === 3;
+                return (
+                  <div key={p.id} className={`relative rounded-2xl overflow-hidden group cursor-pointer ${tall ? "row-span-2 aspect-auto min-h-[280px] sm:min-h-[380px]" : "aspect-square"}`}>
+                    <Image src={p.image} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      <p className="text-white text-[12px] font-medium truncate">{p.name}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {galleryProducts.map((p, i) => {
-              const tall = i === 0 || i === 3;
-              return (
-                <div key={p.id} className={`relative rounded-2xl overflow-hidden group cursor-pointer ${tall ? "row-span-2 aspect-auto min-h-[280px] sm:min-h-[380px]" : "aspect-square"}`}>
-                  <Image src={p.image} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                    <p className="text-white text-[12px] font-medium truncate">{p.name}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ─── TESTIMONIALS ─── */}
       <section className="py-16">

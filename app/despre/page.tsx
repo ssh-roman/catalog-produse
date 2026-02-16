@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { products } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Despre Noi — CasaMea",
@@ -13,7 +12,7 @@ export default function DesprePage() {
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="relative rounded-3xl overflow-hidden bg-primary min-h-[300px] sm:min-h-[400px]">
-          <Image src={products[6]?.image || "/placeholder.svg"} alt="About" fill className="object-cover opacity-30" />
+          <Image src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=600&fit=crop" alt="About" fill className="object-cover opacity-30" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/80 to-primary/40" />
           <div className="relative flex items-end h-full min-h-[300px] sm:min-h-[400px] p-8 sm:p-12">
             <div>

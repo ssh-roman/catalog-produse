@@ -1,14 +1,14 @@
 import Image from "next/image";
-import { CategoryInfo } from "@/lib/data";
-import { products } from "@/lib/data";
+import { CategoryInfo, Product } from "@/lib/data";
 
 interface CategoryCardProps {
   category: CategoryInfo;
   isActive: boolean;
   onClick: () => void;
+  products: Product[];
 }
 
-export default function CategoryCard({ category, isActive, onClick }: CategoryCardProps) {
+export default function CategoryCard({ category, isActive, onClick, products }: CategoryCardProps) {
   const categoryProduct = products.find(p => p.category === category.slug);
 
   return (
