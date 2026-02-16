@@ -3,19 +3,12 @@
 import { Product } from "@/lib/data";
 import { useCart } from "@/lib/cart-context";
 
-interface AddToCartButtonProps {
-  product: Product;
-}
-
-export default function AddToCartButton({ product }: AddToCartButtonProps) {
+export default function AddToCartButton({ product }: { product: Product }) {
   const { addToCart, setIsCartOpen } = useCart();
 
   return (
     <button
-      onClick={() => {
-        addToCart(product);
-        setIsCartOpen(true);
-      }}
+      onClick={() => { addToCart(product); setIsCartOpen(true); }}
       className="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold px-6 py-4 rounded-xl transition-all duration-200 text-lg hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98]"
     >
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
